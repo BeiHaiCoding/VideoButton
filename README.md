@@ -3,8 +3,8 @@
 
 
 <p>    
-  <img src="https://github.com/BeiHaiCoding/VideoButton/blob/f14cf377b2e94598ff75305378df946c24692fcd/image/Screenshot_20210426-013152.png" alt="Latest Stable  Version" />
-  <img src="https://github.com/BeiHaiCoding/VideoButton/blob/f14cf377b2e94598ff75305378df946c24692fcd/image/Screenshot_20210426-013201.png" alt="Latest Stable  Version" />
+  <img src="https://github.com/BeiHaiCoding/VideoButton/blob/5997e21dce6b84161045f416e564fc0c32b17054/image/Screenshot_20210426-013152_300x533.png" alt="Latest Stable  Version" />
+  <img src="https://github.com/BeiHaiCoding/VideoButton/blob/5997e21dce6b84161045f416e564fc0c32b17054/image/Screenshot_20210426-013201_300x533.png" alt="Latest Stable  Version" />
 </p>
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
