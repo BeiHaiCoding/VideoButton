@@ -8,8 +8,8 @@
     tools:context=".MainActivity">
 
     <com.beihai.videobutton.VideoButton
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
         app:buttonType="video"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"

@@ -25,6 +25,8 @@
         <attr name="timerTextColor" format="color"/>
 
         <attr name="timerTextSize" format="dimension"/>
+
+        <attr name="progressBarDuration" format="float"/>
     </declare-styleable>
 
 
