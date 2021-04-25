@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+
+
+
+
+
+
+
+
+
+    <declare-styleable name="VideoButton">
+        <!--view显示类型-->
+        <attr name="buttonType" format="enum">
+            <enum name="photo" value="1" />
+            <enum name="video" value="2" />
+        </attr>
+
+        <attr name="innerCircleColorPhoto" format="color"/>
+        <attr name="outerCircleColorPhoto" format="color"/>
+        <attr name="innerCircleColorVideo" format="color"/>
+        <attr name="outerCircleColorVideo" format="color"/>
+        <attr name="progressBarColor" format="color"/>
+        <attr name="timerTextColor" format="color"/>
+
+        <attr name="timerTextSize" format="dimension"/>
+    </declare-styleable>
+
+
+
+
+</resources>

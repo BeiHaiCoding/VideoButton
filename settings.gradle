@@ -1,0 +1,3 @@
+include ':videobutton'
+include ':app'
+rootProject.name = "RecordViewDemo"
