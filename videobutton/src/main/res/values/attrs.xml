@@ -28,7 +28,7 @@
 
         <attr name="progressBarDuration" format="integer"/>
 
-        <attr name="recordMinTime" format="integer"/>
+        <attr name="minRecordTime" format="integer"/>
 
     </declare-styleable>
 

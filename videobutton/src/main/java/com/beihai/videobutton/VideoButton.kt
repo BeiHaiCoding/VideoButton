@@ -231,7 +231,7 @@ class VideoButton @JvmOverloads constructor(
             mProgressBarDuration
         )
         mMinRecordTime = typedArray.getInt(
-            R.styleable.VideoButton_recordMinTime,
+            R.styleable.VideoButton_minRecordTime,
             mMinRecordTime
         )
         typedArray.recycle()
@@ -420,7 +420,7 @@ class VideoButton @JvmOverloads constructor(
                             if (isOverMinRecordTime) {
                                 endProgressAnim()
                             } else {
-                                Toast.makeText(context, "录制时长不能小于3秒", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "录制时长不能小于${mMinRecordTime}秒", Toast.LENGTH_SHORT).show()
                             }
                         }
                     }
