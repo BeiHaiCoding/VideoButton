@@ -3,12 +3,13 @@
 
 
 <p>    
-
+  <img src="https://github.com/BeiHaiCoding/VideoButton/blob/f14cf377b2e94598ff75305378df946c24692fcd/image/Screenshot_20210426-013152.png" alt="Latest Stable  Version" />
+  <img src="https://github.com/BeiHaiCoding/VideoButton/blob/f14cf377b2e94598ff75305378df946c24692fcd/image/Screenshot_20210426-013201.png" alt="Latest Stable  Version" />
 </p>
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Platform](https://img.shields.io/badge/platform-android-green.svg)](http://developer.android.com/index.html)
-[![API](https://img.shields.io/badge/API-19%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=21)
+[![API](https://img.shields.io/badge/API-21%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=21)
 
 
 使用说明
