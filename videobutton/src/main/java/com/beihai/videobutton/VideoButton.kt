@@ -22,7 +22,6 @@ class VideoButton @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : View(context, attributeSet, defStyleAttr) {
 
-
     /**
      * 当前的按钮类型：
      *   1 : 拍照
@@ -138,17 +137,35 @@ class VideoButton @JvmOverloads constructor(
      */
     private var mInnerRectFSize = 0f
 
-
     /**
      * 内部小方形（视频按钮动画后中心的小方形）
      */
     private var mInnerRectF: RectF = RectF()
 
+    /**
+     * 缩放动画默认时间300ms
+     */
+    private val mScaleAnimDuration: Long = 300
 
-    private var isRecordMinTime = false
+    /**
+     * 进度条默认时间15s,单位秒
+     */
+    private var mProgressBarDuration: Int = 15
 
+    /**
+     * 录制视频的最小时间:3s 单位为秒
+     */
+    private var mMinRecordTime = 3
 
-    private var mListener: OnRecordListener? = null
+    /**
+     * mProgressWidth进度条当前进度
+     */
+    private var mCurrentProgress = 0f
+
+    /**
+     * 是否超过最小录制时间
+     */
+    private var isOverMinRecordTime = false
 
     /**
      * 是否在录像
@@ -160,34 +177,25 @@ class VideoButton @JvmOverloads constructor(
      */
     private var isScaling = false
 
-
-    /**
-     * 动画默认时间300ms
-     */
-    private val animDuration: Long = 300
-
-    /**
-     * 进度条默认时间15s
-     */
-    private var mProgressBarDuration: Long = 15 * 1000
-
-
-    /**
-     * mProgressWidth进度条当前进度
-     */
-    private var mCurrentProgress = 0f
-
     /**
      * mTimeText时间文本
      */
-    private var mTimeText = "0秒"
+    private var mTimerText = "0秒"
 
+    /**
+     * 动画监听器
+     */
+    private var mListener: OnRecordListener? = null
 
+    /**
+     * 进度条动画
+     */
     private var mProgressBarAnim: ObjectAnimator? = null
 
+    /**
+     * 缩放动画
+     */
     private var mScaleAnim: ObjectAnimator? = null
-
-    private var mUpdateListener: ValueAnimator.AnimatorUpdateListener? = null
 
 
     init {
@@ -218,10 +226,14 @@ class VideoButton @JvmOverloads constructor(
             R.styleable.VideoButton_timerTextColor,
             mTimerTextColor
         )
-        mProgressBarDuration = typedArray.getFloat(
+        mProgressBarDuration = typedArray.getInt(
             R.styleable.VideoButton_progressBarDuration,
-            mProgressBarDuration.toFloat()
-        ).toLong()
+            mProgressBarDuration
+        )
+        mMinRecordTime = typedArray.getInt(
+            R.styleable.VideoButton_recordMinTime,
+            mMinRecordTime
+        )
         typedArray.recycle()
 
         mInnerCirclePaint.color = mInnerCircleColorPhoto
@@ -233,7 +245,6 @@ class VideoButton @JvmOverloads constructor(
         mTimerTextPaint.color = mTimerTextColor
         mTimerTextPaint.textSize = mTimerTextSize
         mTimerTextPaint.textAlign = Paint.Align.CENTER
-
 
     }
 
@@ -268,13 +279,13 @@ class VideoButton @JvmOverloads constructor(
                 mOuterCirclePaint.color = mOuterCirCleColorPhoto
                 canvas.drawCircle(
                     mWidth / 2f,
-                    (mHeight - mExtraHeight)/2f+mExtraHeight,
+                    (mHeight - mExtraHeight) / 2f + mExtraHeight,
                     mInnerCircleRadius,
                     mInnerCirclePaint
                 )
                 canvas.drawCircle(
                     mWidth / 2f,
-                    (mHeight - mExtraHeight)/2f+mExtraHeight,
+                    (mHeight - mExtraHeight) / 2f + mExtraHeight,
                     mOuterCircleRadius,
                     mOuterCirclePaint
                 )
@@ -289,7 +300,7 @@ class VideoButton @JvmOverloads constructor(
                 //画内圆
                 canvas.drawCircle(
                     mWidth / 2f,
-                    (mHeight - mExtraHeight)/2f+mExtraHeight,
+                    (mHeight - mExtraHeight) / 2f + mExtraHeight,
                     mInnerCircleRadius,
                     mInnerCirclePaint
                 )
@@ -297,9 +308,9 @@ class VideoButton @JvmOverloads constructor(
                 //设置方形尺寸
                 mInnerRectF.set(
                     mWidth / 2f - mInnerRectFSize / 2f,
-                    (mHeight - mExtraHeight)/2f+mExtraHeight - mInnerRectFSize / 2f,
+                    (mHeight - mExtraHeight) / 2f + mExtraHeight - mInnerRectFSize / 2f,
                     mWidth / 2f + mInnerRectFSize / 2f,
-                    (mHeight - mExtraHeight)/2f+mExtraHeight + mInnerRectFSize / 2f
+                    (mHeight - mExtraHeight) / 2f + mExtraHeight + mInnerRectFSize / 2f
                 )
 
                 //画内部小正方形
@@ -313,7 +324,7 @@ class VideoButton @JvmOverloads constructor(
                 //画外圆
                 canvas.drawCircle(
                     mWidth / 2f,
-                    (mHeight - mExtraHeight)/2f+mExtraHeight,
+                    (mHeight - mExtraHeight) / 2f + mExtraHeight,
                     mOuterCircleRadius,
                     mOuterCirclePaint
                 )
@@ -321,7 +332,7 @@ class VideoButton @JvmOverloads constructor(
                 //开启动画
                 if (isRecording) {
                     drawProgress(canvas)
-                    drawTimeText(canvas)
+                    drawTimerText(canvas)
                 }
 
                 canvas.restoreToCount(saved)
@@ -339,11 +350,11 @@ class VideoButton @JvmOverloads constructor(
      * @param canvas
      * mRectF.centerX() - mInnerRadius - mRectSize / 2-16
      */
-    private fun drawTimeText(canvas: Canvas) {
+    private fun drawTimerText(canvas: Canvas) {
         canvas.drawText(
-            mTimeText,
+            mTimerText,
             mWidth / 2.0f,
-            (mHeight / 2.0f + mExtraHeight) - mOuterCircleRadius -mTimerTextSize,
+            (mHeight / 2.0f + mExtraHeight) - mOuterCircleRadius - mTimerTextSize,
             mTimerTextPaint
         )
     }
@@ -356,9 +367,9 @@ class VideoButton @JvmOverloads constructor(
         //用于定义的圆弧的形状和大小的界限
         val oval = RectF(
             mWidth / 2 - (mOuterCircleRadius - mProgressBarWidth / 2),
-            (mHeight - mExtraHeight)/2f+mExtraHeight - (mOuterCircleRadius - mProgressBarWidth / 2),
+            (mHeight - mExtraHeight) / 2f + mExtraHeight - (mOuterCircleRadius - mProgressBarWidth / 2),
             mWidth / 2 + (mOuterCircleRadius - mProgressBarWidth / 2),
-            (mHeight - mExtraHeight)/2f+mExtraHeight + (mOuterCircleRadius - mProgressBarWidth / 2)
+            (mHeight - mExtraHeight) / 2f + mExtraHeight + (mOuterCircleRadius - mProgressBarWidth / 2)
         )
         //根据进度画圆弧
         canvas.drawArc(oval, -90f, mCurrentProgress, false, mProgressBarPaint)
@@ -382,7 +393,6 @@ class VideoButton @JvmOverloads constructor(
                     }
                 }
 
-
                 MotionEvent.ACTION_UP -> {
                     if (isScaling) {
                         return true
@@ -397,8 +407,8 @@ class VideoButton @JvmOverloads constructor(
                             performClick()
                             isRecording = true
                             mCurrentProgress = 0f
-                            mTimeText = "0秒"
-                            isRecordMinTime = false
+                            mTimerText = "0秒"
+                            isOverMinRecordTime = false
                             startScaleAnim()
                         }
                     } else {
@@ -407,7 +417,7 @@ class VideoButton @JvmOverloads constructor(
                             && event.y <= mHeight
                             && event.y >= 0
                         ) {
-                            if (isRecordMinTime) {
+                            if (isOverMinRecordTime) {
                                 endProgressAnim()
                             } else {
                                 Toast.makeText(context, "录制时长不能小于3秒", Toast.LENGTH_SHORT).show()
@@ -429,18 +439,18 @@ class VideoButton @JvmOverloads constructor(
         mInnerCircleRadiusOld = mInnerCircleRadius
         mOuterCircleRadiusOld = mOuterCircleRadius
         val holder1 = PropertyValuesHolder.ofFloat(
-            "mInnerRadius",
+            "mInnerCircleRadius",
             mInnerCircleRadius,
             0f
         )
         val holder2 = PropertyValuesHolder.ofFloat(
-            "mOuterRadius",
+            "mOuterCircleRadius",
             mOuterCircleRadius,
-            mOuterCircleRadius + (mHeight-mExtraHeight)/2*0.3f
+            mOuterCircleRadius + (mHeight - mExtraHeight) / 2 * 0.3f
         )
         mScaleAnim = ObjectAnimator.ofPropertyValuesHolder(this, holder1, holder2)
 
-        mScaleAnim?.duration = animDuration
+        mScaleAnim?.duration = mScaleAnimDuration
         mScaleAnim?.interpolator = LinearInterpolator()
         mScaleAnim?.addListener(object : Animator.AnimatorListener {
             override fun onAnimationStart(animation: Animator?) {
@@ -466,18 +476,18 @@ class VideoButton @JvmOverloads constructor(
     private fun endScaleAnim() {
         val holder1 =
             PropertyValuesHolder.ofFloat(
-                "mInnerRadius",
-                 mInnerCircleRadius,
+                "mInnerCircleRadius",
+                mInnerCircleRadius,
                 mInnerCircleRadiusOld
             )
         val holder2 =
             PropertyValuesHolder.ofFloat(
-                "mOuterRadius",
+                "mOuterCircleRadius",
                 mOuterCircleRadius,
                 mOuterCircleRadiusOld
             )
         val anim = ObjectAnimator.ofPropertyValuesHolder(this, holder1, holder2)
-        anim.duration = animDuration
+        anim.duration = mScaleAnimDuration
         anim.interpolator = LinearInterpolator()
         anim.addListener(object : Animator.AnimatorListener {
             override fun onAnimationStart(animation: Animator?) {
@@ -500,22 +510,21 @@ class VideoButton @JvmOverloads constructor(
 
     private fun startProgressAnim() {
         mProgressBarAnim = ObjectAnimator.ofFloat(this, "mCurrentProgress", 0f, 360f)
-        mProgressBarAnim?.duration = mProgressBarDuration
+        mProgressBarAnim?.duration = mProgressBarDuration*1000L
         mProgressBarAnim?.interpolator = LinearInterpolator()
-        mUpdateListener = ValueAnimator.AnimatorUpdateListener {
-            setMTimeText(
+        val updateListener = ValueAnimator.AnimatorUpdateListener {
+            setMTimerText(
                 BigDecimal(it.currentPlayTime / 1000.00).setScale(1, BigDecimal.ROUND_DOWN)
                     .toString() + "秒"
             )
-            if (it.currentPlayTime / 1000.00 >= 3) {
-                isRecordMinTime = true
+            if (it.currentPlayTime / 1000.00 >= mMinRecordTime) {
+                isOverMinRecordTime = true
             }
         }
-        mProgressBarAnim?.addUpdateListener(mUpdateListener)
+        mProgressBarAnim?.addUpdateListener(updateListener)
 
         mProgressBarAnim?.addListener(object : Animator.AnimatorListener {
             override fun onAnimationStart(animation: Animator?) {
-
             }
 
             override fun onAnimationEnd(animation: Animator?) {
@@ -543,27 +552,27 @@ class VideoButton @JvmOverloads constructor(
         mProgressBarAnim?.cancel()
     }
 
-    fun setMCurrentProgress(size: Float) {
+    private fun setMCurrentProgress(size: Float) {
         this.mCurrentProgress = size
         invalidate()
     }
 
-    fun setMInnerRadius(size: Float) {
+    private fun setMInnerCircleRadius(size: Float) {
         this.mInnerCircleRadius = size
         invalidate()
     }
 
-    fun setMTimeText(text: String) {
-        this.mTimeText = text
+    private fun setMTimerText(text: String) {
+        this.mTimerText = text
         invalidate()
     }
 
-    fun setMOuterRadius(size: Float) {
+    private fun setMOuterCircleRadius(size: Float) {
         this.mOuterCircleRadius = size
         invalidate()
     }
 
-    fun setType(type: Int) {
+    private fun setMCurrentButtonType(type: Int) {
         this.mCurrentButtonType = type
         invalidate()
     }

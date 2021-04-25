@@ -26,7 +26,10 @@
 
         <attr name="timerTextSize" format="dimension"/>
 
-        <attr name="progressBarDuration" format="float"/>
+        <attr name="progressBarDuration" format="integer"/>
+
+        <attr name="recordMinTime" format="integer"/>
+
     </declare-styleable>
 
 
